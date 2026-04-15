@@ -86,6 +86,19 @@ def charger_config() -> dict:
     # Créer aussi le dossier "Non_classé" pour les PDF non identifiés
     (config["dossier_archives"] / "Non_classe").mkdir(parents=True, exist_ok=True)
 
+    # Pré-trier les mots-clés et les fournisseurs une seule fois au chargement de la configuration
+    # pour optimiser la fonction identifier_fournisseur
+    for infos in config["fournisseurs"].values():
+        infos["mots_cles"] = sorted(infos["mots_cles"], key=len, reverse=True)
+
+    config["fournisseurs"] = dict(
+        sorted(
+            config["fournisseurs"].items(),
+            key=lambda item: max(len(kw) for kw in item[1]["mots_cles"]) if item[1]["mots_cles"] else 0,
+            reverse=True,
+        )
+    )
+
     logger.info("Configuration chargée avec succès")
     logger.info("  Surveillance  : %s", config["dossier_surveillance"])
     logger.info("  Archives      : %s", config["dossier_archives"])
@@ -132,19 +145,14 @@ def identifier_fournisseur(texte: str, fournisseurs: dict) -> dict | None:
     La recherche se fait en case-insensitive.
     On privilégie les mots-clés les plus longs d'abord pour éviter les faux positifs
     (ex: "free" pourrait matcher dans d'autres contextes).
+
+    NOTE: La structure `fournisseurs` est pré-triée dans `charger_config()` pour
+    optimiser les performances, on peut donc itérer directement dessus.
     """
     texte_lower = texte.lower()
 
-    # Trier les fournisseurs par longueur de leur mot-clé le plus long (desc)
-    # pour favoriser les matches les plus spécifiques
-    fournisseurs_tries = sorted(
-        fournisseurs.items(),
-        key=lambda item: max(len(kw) for kw in item[1]["mots_cles"]),
-        reverse=True,
-    )
-
-    for _cle, infos in fournisseurs_tries:
-        for mot_cle in sorted(infos["mots_cles"], key=len, reverse=True):
+    for _cle, infos in fournisseurs.items():
+        for mot_cle in infos["mots_cles"]:
             if mot_cle.lower() in texte_lower:
                 logger.info(
                     "  ✔ Fournisseur identifié : %s (mot-clé : '%s')",
