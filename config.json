@@ -1,0 +1,153 @@
+{
+    "dossier_surveillance": "~/Downloads",
+    "dossier_archives": "~/Documents/Archives_PDF",
+    "delai_traitement_secondes": 3,
+    "fournisseurs": {
+        "EDF": {
+            "nom": "EDF",
+            "mots_cles": [
+                "edf",
+                "électricité de france",
+                "electricite de france",
+                "tarif bleu",
+                "tarif réglementé de vente",
+                "enedis",
+                "edf commerce"
+            ],
+            "dossier": "EDF"
+        },
+        "Engie": {
+            "nom": "Engie",
+            "mots_cles": [
+                "engie",
+                "gaz de france",
+                "grdf",
+                "engie home services"
+            ],
+            "dossier": "Engie"
+        },
+        "Free": {
+            "nom": "Free",
+            "mots_cles": [
+                "free",
+                "free mobile",
+                "freebox",
+                "iliad",
+                "free sas"
+            ],
+            "dossier": "Free"
+        },
+        "Orange": {
+            "nom": "Orange",
+            "mots_cles": [
+                "orange",
+                "sosh",
+                "orange s.a",
+                "orange france"
+            ],
+            "dossier": "Orange"
+        },
+        "SFR": {
+            "nom": "SFR",
+            "mots_cles": [
+                "sfr",
+                "altice",
+                "numericable",
+                "sfr group",
+                "red by sfr"
+            ],
+            "dossier": "SFR"
+        },
+        "Bouygues_Telecom": {
+            "nom": "Bouygues Telecom",
+            "mots_cles": [
+                "bouygues telecom",
+                "b&you",
+                "bouygues tel",
+                "bbox"
+            ],
+            "dossier": "Bouygues_Telecom"
+        },
+        "Impots": {
+            "nom": "Impots",
+            "mots_cles": [
+                "direction générale des finances",
+                "direction generale des finances",
+                "dgfip",
+                "trésor public",
+                "tresor public",
+                "impôt",
+                "impot",
+                "avis d'imposition",
+                "centre des finances publiques"
+            ],
+            "dossier": "Impots"
+        },
+        "Assurance_Maladie": {
+            "nom": "Assurance Maladie",
+            "mots_cles": [
+                "ameli",
+                "cpam",
+                "assurance maladie",
+                "sécurité sociale",
+                "securite sociale",
+                "caisse primaire"
+            ],
+            "dossier": "Assurance_Maladie"
+        },
+        "CAF": {
+            "nom": "CAF",
+            "mots_cles": [
+                "caf",
+                "caisse d'allocations",
+                "allocations familiales",
+                "aide au logement"
+            ],
+            "dossier": "CAF"
+        },
+        "Banque": {
+            "nom": "Banque",
+            "mots_cles": [
+                "relevé de compte",
+                "releve de compte",
+                "crédit agricole",
+                "credit agricole",
+                "bnp paribas",
+                "société générale",
+                "societe generale",
+                "la banque postale",
+                "lcl",
+                "caisse d'épargne",
+                "caisse d'epargne",
+                "crédit mutuel",
+                "credit mutuel",
+                "boursorama",
+                "n26",
+                "fortuneo",
+                "hello bank"
+            ],
+            "dossier": "Banque"
+        },
+        "Amazon": {
+            "nom": "Amazon",
+            "mots_cles": [
+                "amazon",
+                "amazon.fr",
+                "amazon eu sarl",
+                "marketplace amazon"
+            ],
+            "dossier": "Amazon"
+        },
+        "Eau": {
+            "nom": "Eau",
+            "mots_cles": [
+                "veolia eau",
+                "suez eau",
+                "lyonnaise des eaux",
+                "service des eaux",
+                "facture d'eau"
+            ],
+            "dossier": "Eau"
+        }
+    }
+}
