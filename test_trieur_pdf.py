@@ -1,26 +1,30 @@
 import sys
 from unittest.mock import MagicMock
 
-# Mock dependencies that are not installed
-sys.modules["pdfplumber"] = MagicMock()
-sys.modules["watchdog"] = MagicMock()
-sys.modules["watchdog.observers"] = MagicMock()
-sys.modules["watchdog.events"] = MagicMock()
+# Mock dependencies that are not installed if they really aren't
+try:
+    import watchdog
+except ImportError:
+    sys.modules["pdfplumber"] = MagicMock()
+    sys.modules["watchdog"] = MagicMock()
+    sys.modules["watchdog.observers"] = MagicMock()
+    sys.modules["watchdog.events"] = MagicMock()
 
 import pytest
 from trieur_pdf import identifier_fournisseur
 
 @pytest.fixture
 def fournisseurs_mock():
-    return {
+    # Simuler le tri de mots-clés par longueur qui a lieu dans charger_config()
+    fournisseurs = {
         "EDF": {
             "nom": "EDF",
-            "mots_cles": ["edf", "électricité de france"],
+            "mots_cles": ["électricité de france", "edf"],
             "dossier": "EDF"
         },
         "Free": {
             "nom": "Free",
-            "mots_cles": ["free", "free mobile"],
+            "mots_cles": ["free mobile", "free"],
             "dossier": "Free"
         },
         "Free_Specific": {
@@ -29,6 +33,14 @@ def fournisseurs_mock():
             "dossier": "Free"
         }
     }
+    # Ordonner par mot-clé le plus long
+    return dict(
+        sorted(
+            fournisseurs.items(),
+            key=lambda item: max(len(kw) for kw in item[1]["mots_cles"]) if item[1]["mots_cles"] else 0,
+            reverse=True,
+        )
+    )
 
 def test_identifier_fournisseur_basic(fournisseurs_mock):
     texte = "Ceci est une facture EDF."
@@ -70,3 +82,16 @@ def test_identifier_fournisseur_empty_text(fournisseurs_mock):
 def test_identifier_fournisseur_empty_fournisseurs():
     result = identifier_fournisseur("EDF", {})
     assert result is None
+
+def test_fichier_stable_oserror():
+    from trieur_pdf import GestionnairePDF
+    from pathlib import Path
+
+    config = {"delai_traitement_secondes": 0}
+    gestionnaire = GestionnairePDF(config)
+
+    chemin_mock = MagicMock(spec=Path)
+    chemin_mock.exists.return_value = True
+    chemin_mock.stat.side_effect = OSError("Access denied")
+
+    assert gestionnaire._fichier_stable(chemin_mock, intervalle=0) is False
