@@ -98,13 +98,15 @@ def charger_config() -> dict:
 
 # ─────────────────────────── Extraction de texte ────────────────────────────────
 
+MAX_PAGES_TO_EXTRACT = 10
+
 
 def extraire_texte(chemin_pdf: Path) -> str:
-    """Extrait le texte de toutes les pages d'un PDF avec pdfplumber."""
+    """Extrait le texte des premières pages d'un PDF avec pdfplumber."""
     texte_complet = ""
     try:
         with pdfplumber.open(chemin_pdf) as pdf:
-            for page in pdf.pages:
+            for page in pdf.pages[:MAX_PAGES_TO_EXTRACT]:
                 texte_page = page.extract_text()
                 if texte_page:
                     texte_complet += texte_page + "\n"
