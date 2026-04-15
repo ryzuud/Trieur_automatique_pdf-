@@ -12,7 +12,7 @@ from trieur_pdf import identifier_fournisseur
 
 @pytest.fixture
 def fournisseurs_mock():
-    return {
+    fournisseurs = {
         "EDF": {
             "nom": "EDF",
             "mots_cles": ["edf", "électricité de france"],
@@ -29,6 +29,17 @@ def fournisseurs_mock():
             "dossier": "Free"
         }
     }
+    for infos in fournisseurs.values():
+        infos["mots_cles"] = sorted(infos["mots_cles"], key=len, reverse=True)
+
+    fournisseurs = dict(
+        sorted(
+            fournisseurs.items(),
+            key=lambda item: max(len(kw) for kw in item[1]["mots_cles"]) if item[1]["mots_cles"] else 0,
+            reverse=True,
+        )
+    )
+    return fournisseurs
 
 def test_identifier_fournisseur_basic(fournisseurs_mock):
     texte = "Ceci est une facture EDF."
@@ -70,3 +81,25 @@ def test_identifier_fournisseur_empty_text(fournisseurs_mock):
 def test_identifier_fournisseur_empty_fournisseurs():
     result = identifier_fournisseur("EDF", {})
     assert result is None
+
+from unittest.mock import patch
+from trieur_pdf import traiter_pdf
+
+def test_traiter_pdf_erreur_deplacement(tmp_path):
+    dossier_archives = tmp_path / "archives"
+    dossier_archives.mkdir()
+
+    config = {
+        "fournisseurs": {},
+        "dossier_archives": dossier_archives
+    }
+
+    dummy_pdf = tmp_path / "test.pdf"
+    dummy_pdf.touch()
+
+    with patch("trieur_pdf.extraire_texte", return_value=""), \
+         patch("trieur_pdf.extraire_date", return_value=("2023", "01")), \
+         patch("shutil.move", side_effect=Exception("Disk full")):
+
+        result = traiter_pdf(dummy_pdf, config)
+        assert result is False
