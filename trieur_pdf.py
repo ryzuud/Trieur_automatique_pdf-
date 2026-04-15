@@ -21,14 +21,14 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
+import pdfplumber
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+
 # Forcer l'encodage UTF-8 sur Windows pour supporter les emojis et accents
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-
-import pdfplumber
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 
 # ─────────────────────────── Configuration du logging ───────────────────────────
 
@@ -38,9 +38,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(
-            Path(__file__).parent / "trieur_pdf.log", encoding="utf-8"
-        ),
+        logging.FileHandler(Path(__file__).parent / "trieur_pdf.log", encoding="utf-8"),
     ],
 )
 logger = logging.getLogger("TrieurPDF")
@@ -100,7 +98,11 @@ def charger_config() -> dict:
     config["fournisseurs"] = dict(
         sorted(
             config["fournisseurs"].items(),
-            key=lambda item: max(len(kw) for kw in item[1]["mots_cles"]) if item[1]["mots_cles"] else 0,
+            key=lambda item: (
+                max(len(kw) for kw in item[1]["mots_cles"])
+                if item[1]["mots_cles"]
+                else 0
+            ),
             reverse=True,
         )
     )
@@ -108,9 +110,7 @@ def charger_config() -> dict:
     logger.info("Configuration chargée avec succès")
     logger.info("  Surveillance  : %s", config["dossier_surveillance"])
     logger.info("  Archives      : %s", config["dossier_archives"])
-    logger.info(
-        "  Fournisseurs  : %d configurés", len(config["fournisseurs"])
-    )
+    logger.info("  Fournisseurs  : %d configurés", len(config["fournisseurs"]))
 
     return config
 
@@ -178,10 +178,21 @@ def identifier_fournisseur(texte: str, fournisseurs: dict) -> dict | None:
 
 # Mois français → numéro
 MOIS_FR = {
-    "janvier": "01", "février": "02", "fevrier": "02", "mars": "03",
-    "avril": "04", "mai": "05", "juin": "06", "juillet": "07",
-    "août": "08", "aout": "08", "septembre": "09", "octobre": "10",
-    "novembre": "11", "décembre": "12", "decembre": "12",
+    "janvier": "01",
+    "février": "02",
+    "fevrier": "02",
+    "mars": "03",
+    "avril": "04",
+    "mai": "05",
+    "juin": "06",
+    "juillet": "07",
+    "août": "08",
+    "aout": "08",
+    "septembre": "09",
+    "octobre": "10",
+    "novembre": "11",
+    "décembre": "12",
+    "decembre": "12",
 }
 
 # Patterns de dates courants dans les documents français
@@ -355,7 +366,9 @@ class GestionnairePDF(FileSystemEventHandler):
 
         # Vérifier la stabilité du fichier (taille ne change plus)
         if not self._fichier_stable(chemin):
-            logger.warning("  Le fichier est encore en cours de modification, nouvel essai...")
+            logger.warning(
+                "  Le fichier est encore en cours de modification, nouvel essai..."
+            )
             time.sleep(self.delai)
             if not self._fichier_stable(chemin):
                 logger.error("  Le fichier n'est toujours pas stable, abandon.")
@@ -470,10 +483,18 @@ def git_auto_push():
             return False
         logger.info("  ✅ Remote 'origin' mis à jour.")
     else:
-        logger.info("  ✅ Remote 'origin' correctement configuré : %s", remote_url.strip())
+        logger.info(
+            "  ✅ Remote 'origin' correctement configuré : %s", remote_url.strip()
+        )
 
     # ── 3. git add fichiers spécifiques ──
-    fichiers_a_suivre = ["trieur_pdf.py", "config.json", "requirements.txt", ".gitignore", "README.md"]
+    fichiers_a_suivre = [
+        "trieur_pdf.py",
+        "config.json",
+        "requirements.txt",
+        ".gitignore",
+        "README.md",
+    ]
     ok, msg = executer_commande_git("add", *fichiers_a_suivre)
     if not ok:
         logger.error("  ❌ Échec de git add : %s", msg)
