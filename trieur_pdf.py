@@ -382,7 +382,6 @@ def traiter_fichiers_existants(config: dict):
 # ─────────────────────────── Automatisation Git ─────────────────────────────────
 
 NOM_PROJET = "Trieur_automatique_pdf"
-GITHUB_URL = "https://github.com/ryzuud/Trieur_automatique_pdf-.git"
 
 
 def executer_commande_git(*args: str) -> tuple[bool, str]:
@@ -408,13 +407,19 @@ def executer_commande_git(*args: str) -> tuple[bool, str]:
         return False, f"Erreur inattendue : {e}"
 
 
-def git_auto_push():
+def git_auto_push(config: dict):
     """
     Automatisation Git :
     1. Vérifie/initialise le dépôt Git
     2. Vérifie/ajoute le remote origin vers GitHub
     3. git add . → git commit → git push origin main
     """
+    github_url = config.get("github_url", "")
+    if not github_url:
+        logger.info("━" * 60)
+        logger.info("ℹ️  Automatisation Git désactivée (aucune URL configurée).")
+        return False
+
     logger.info("━" * 60)
     logger.info("🔄 Automatisation Git en cours...")
 
@@ -440,17 +445,17 @@ def git_auto_push():
 
     if not ok:
         # Pas de remote origin, on l'ajoute
-        logger.info("  Aucun remote 'origin' trouvé, ajout de %s", GITHUB_URL)
-        ok, msg = executer_commande_git("remote", "add", "origin", GITHUB_URL)
+        logger.info("  Aucun remote 'origin' trouvé, ajout de %s", github_url)
+        ok, msg = executer_commande_git("remote", "add", "origin", github_url)
         if not ok:
             logger.error("  ❌ Échec de l'ajout du remote : %s", msg)
             return False
         logger.info("  ✅ Remote 'origin' ajouté.")
-    elif GITHUB_URL not in remote_url and "ryzuud" not in remote_url:
+    elif github_url not in remote_url:
         # Remote existe mais ne pointe pas vers le bon GitHub
         logger.info("  Remote actuel : %s", remote_url.strip())
-        logger.info("  Mise à jour vers : %s", GITHUB_URL)
-        ok, msg = executer_commande_git("remote", "set-url", "origin", GITHUB_URL)
+        logger.info("  Mise à jour vers : %s", github_url)
+        ok, msg = executer_commande_git("remote", "set-url", "origin", github_url)
         if not ok:
             logger.error("  ❌ Échec de la mise à jour du remote : %s", msg)
             return False
@@ -489,7 +494,7 @@ def git_auto_push():
             logger.error("  💡 Vérifiez votre connexion et vos identifiants GitHub.")
             return False
 
-    logger.info("  ✅ Push réussi vers %s", GITHUB_URL)
+    logger.info("  ✅ Push réussi vers %s", github_url)
     logger.info("━" * 60)
     return True
 
@@ -526,7 +531,7 @@ def main():
     print()
 
     # Automatisation Git après démarrage réussi
-    git_auto_push()
+    git_auto_push(config)
 
     try:
         while True:

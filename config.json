@@ -2,6 +2,7 @@
     "dossier_surveillance": "~/Downloads",
     "dossier_archives": "~/Documents/Archives_PDF",
     "delai_traitement_secondes": 3,
+    "github_url": "",
     "fournisseurs": {
         "EDF": {
             "nom": "EDF",
