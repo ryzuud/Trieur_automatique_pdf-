@@ -458,12 +458,13 @@ def git_auto_push():
     else:
         logger.info("  ✅ Remote 'origin' correctement configuré : %s", remote_url.strip())
 
-    # ── 3. git add . ──
-    ok, msg = executer_commande_git("add", ".")
+    # ── 3. git add fichiers spécifiques ──
+    fichiers_a_suivre = ["trieur_pdf.py", "config.json", "requirements.txt", ".gitignore", "README.md"]
+    ok, msg = executer_commande_git("add", *fichiers_a_suivre)
     if not ok:
         logger.error("  ❌ Échec de git add : %s", msg)
         return False
-    logger.info("  ✅ Fichiers ajoutés au staging (git add .)")
+    logger.info("  ✅ Fichiers ajoutés au staging (git add sélectif)")
 
     # ── 4. git commit ──
     message_commit = f"Mise à jour automatique - {NOM_PROJET}"
