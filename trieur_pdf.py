@@ -332,16 +332,12 @@ class GestionnairePDF(FileSystemEventHandler):
 
         chemin = Path(event.src_path)
 
-        # Ne traiter que les PDF
-        if chemin.suffix.lower() != ".pdf":
-            return
-
-        # Ignorer les fichiers temporaires (téléchargement en cours)
-        if chemin.name.startswith(".") or chemin.name.endswith(".tmp"):
-            return
-        if chemin.name.endswith(".crdownload"):  # Chrome
-            return
-        if chemin.name.endswith(".part"):  # Firefox
+        # Ne traiter que les PDF et ignorer les fichiers temporaires
+        if (
+            chemin.suffix.lower() != ".pdf"
+            or chemin.name.startswith(".")
+            or chemin.name.endswith((".tmp", ".crdownload", ".part"))
+        ):
             return
 
         logger.info("⏳ Fichier détecté, attente de %d secondes...", self.delai)
