@@ -45,6 +45,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger("TrieurPDF")
 
+
+def sanitiser_log(message: str) -> str:
+    """Nettoie une chaîne pour le logging en remplaçant les sauts de ligne."""
+    return str(message).replace("\n", r"\n").replace("\r", r"\r")
+
+
 # ─────────────────────────── Chargement de la config ────────────────────────────
 
 
@@ -109,13 +115,17 @@ def extraire_texte(chemin_pdf: Path) -> str:
                 if texte_page:
                     texte_complet += texte_page + "\n"
     except Exception as e:
-        logger.error("Erreur lors de la lecture du PDF '%s' : %s", chemin_pdf.name, e)
+        logger.error(
+            "Erreur lors de la lecture du PDF '%s' : %s",
+            sanitiser_log(chemin_pdf.name),
+            e,
+        )
         return ""
 
     if not texte_complet.strip():
         logger.warning(
             "Aucun texte extractible dans '%s' (PDF scanné ou protégé ?)",
-            chemin_pdf.name,
+            sanitiser_log(chemin_pdf.name),
         )
 
     return texte_complet
@@ -256,7 +266,7 @@ def traiter_pdf(chemin_pdf: Path, config: dict) -> bool:
     Retourne True si le traitement a réussi, False sinon.
     """
     logger.info("━" * 60)
-    logger.info("📄 Nouveau PDF détecté : %s", chemin_pdf.name)
+    logger.info("📄 Nouveau PDF détecté : %s", sanitiser_log(chemin_pdf.name))
 
     # Vérifier que le fichier existe toujours
     if not chemin_pdf.exists():
