@@ -7,8 +7,10 @@ sys.modules["watchdog"] = MagicMock()
 sys.modules["watchdog.observers"] = MagicMock()
 sys.modules["watchdog.events"] = MagicMock()
 
+from unittest.mock import patch
+from pathlib import Path
 import pytest
-from trieur_pdf import identifier_fournisseur
+from trieur_pdf import identifier_fournisseur, extraire_texte
 
 @pytest.fixture
 def fournisseurs_mock():
@@ -18,14 +20,14 @@ def fournisseurs_mock():
             "mots_cles": ["edf", "électricité de france"],
             "dossier": "EDF"
         },
-        "Free": {
-            "nom": "Free",
-            "mots_cles": ["free", "free mobile"],
-            "dossier": "Free"
-        },
         "Free_Specific": {
             "nom": "Free Specific",
             "mots_cles": ["freebox ultra"],
+            "dossier": "Free"
+        },
+        "Free": {
+            "nom": "Free",
+            "mots_cles": ["free", "free mobile"],
             "dossier": "Free"
         }
     }
@@ -70,3 +72,8 @@ def test_identifier_fournisseur_empty_text(fournisseurs_mock):
 def test_identifier_fournisseur_empty_fournisseurs():
     result = identifier_fournisseur("EDF", {})
     assert result is None
+
+def test_extraire_texte_exception():
+    with patch("trieur_pdf.pdfplumber.open", side_effect=Exception("Test error")):
+        result = extraire_texte(Path("dummy.pdf"))
+        assert result == ""
