@@ -382,7 +382,7 @@ def traiter_fichiers_existants(config: dict):
 # ─────────────────────────── Automatisation Git ─────────────────────────────────
 
 NOM_PROJET = "Trieur_automatique_pdf"
-GITHUB_URL = "https://github.com/ryzuud/Trieur_automatique_pdf.git"
+GITHUB_URL = "https://github.com/ryzuud/Trieur_automatique_pdf-.git"
 
 
 def executer_commande_git(*args: str) -> tuple[bool, str]:
