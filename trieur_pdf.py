@@ -197,22 +197,19 @@ def extraire_date(texte: str, chemin_pdf: Path) -> tuple[str, str]:
                 mois_texte = groups[1].lower()
                 annee = groups[2]
                 mois = MOIS_FR.get(mois_texte, "01")
-                logger.info("  📅 Date trouvée dans le texte : %s/%s", mois, annee)
-                return annee, mois
 
             elif i == 1:
                 # Format JJ/MM/AAAA
                 annee = groups[2]
                 mois = groups[1]
-                logger.info("  📅 Date trouvée dans le texte : %s/%s", mois, annee)
-                return annee, mois
 
             elif i == 2:
                 # Format AAAA-MM-JJ (ISO)
                 annee = groups[0]
                 mois = groups[1]
-                logger.info("  📅 Date trouvée dans le texte : %s/%s", mois, annee)
-                return annee, mois
+
+            logger.info("  📅 Date trouvée dans le texte : %s/%s", mois, annee)
+            return annee, mois
 
     # Fallback : date de modification du fichier
     timestamp = os.path.getmtime(chemin_pdf)
