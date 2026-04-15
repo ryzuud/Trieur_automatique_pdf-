@@ -117,13 +117,18 @@ def charger_config() -> dict:
 
 # ─────────────────────────── Extraction de texte ────────────────────────────────
 
+MAX_PAGES_TO_EXTRACT = 5
+
 
 def extraire_texte(chemin_pdf: Path) -> str:
-    """Extrait le texte de toutes les pages d'un PDF avec pdfplumber."""
+    """Extrait le texte d'un PDF avec pdfplumber (limité aux premières pages)."""
     texte_complet = ""
     try:
+        # pylint: disable=broad-exception-caught
         with pdfplumber.open(chemin_pdf) as pdf:
-            for page in pdf.pages:
+            for i, page in enumerate(pdf.pages):
+                if i >= MAX_PAGES_TO_EXTRACT:
+                    break
                 texte_page = page.extract_text()
                 if texte_page:
                     texte_complet += texte_page + "\n"
