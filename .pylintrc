@@ -1,0 +1,6 @@
+[pylint.FORMAT]
+max-line-length=95
+[pylint.DESIGN]
+max-returns=8
+max-branches=14
+max-statements=51

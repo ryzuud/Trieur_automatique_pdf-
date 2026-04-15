@@ -20,15 +20,14 @@ import time
 import logging
 from datetime import datetime
 from pathlib import Path
+import pdfplumber
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 # Forcer l'encodage UTF-8 sur Windows pour supporter les emojis et accents
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-
-import pdfplumber
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 
 # ─────────────────────────── Configuration du logging ───────────────────────────
 
@@ -38,9 +37,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(
-            Path(__file__).parent / "trieur_pdf.log", encoding="utf-8"
-        ),
+        logging.FileHandler(Path(__file__).parent / "trieur_pdf.log", encoding="utf-8"),
     ],
 )
 logger = logging.getLogger("TrieurPDF")
@@ -63,9 +60,7 @@ def charger_config() -> dict:
     config["dossier_surveillance"] = Path(
         os.path.expanduser(config["dossier_surveillance"])
     ).resolve()
-    config["dossier_archives"] = Path(
-        os.path.expanduser(config["dossier_archives"])
-    ).resolve()
+    config["dossier_archives"] = Path(os.path.expanduser(config["dossier_archives"])).resolve()
 
     # Vérifier que le dossier de surveillance existe
     if not config["dossier_surveillance"].exists():
@@ -89,9 +84,7 @@ def charger_config() -> dict:
     logger.info("Configuration chargée avec succès")
     logger.info("  Surveillance  : %s", config["dossier_surveillance"])
     logger.info("  Archives      : %s", config["dossier_archives"])
-    logger.info(
-        "  Fournisseurs  : %d configurés", len(config["fournisseurs"])
-    )
+    logger.info("  Fournisseurs  : %d configurés", len(config["fournisseurs"]))
 
     return config
 
@@ -108,7 +101,7 @@ def extraire_texte(chemin_pdf: Path) -> str:
                 texte_page = page.extract_text()
                 if texte_page:
                     texte_complet += texte_page + "\n"
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("Erreur lors de la lecture du PDF '%s' : %s", chemin_pdf.name, e)
         return ""
 
@@ -160,10 +153,21 @@ def identifier_fournisseur(texte: str, fournisseurs: dict) -> dict | None:
 
 # Mois français → numéro
 MOIS_FR = {
-    "janvier": "01", "février": "02", "fevrier": "02", "mars": "03",
-    "avril": "04", "mai": "05", "juin": "06", "juillet": "07",
-    "août": "08", "aout": "08", "septembre": "09", "octobre": "10",
-    "novembre": "11", "décembre": "12", "decembre": "12",
+    "janvier": "01",
+    "février": "02",
+    "fevrier": "02",
+    "mars": "03",
+    "avril": "04",
+    "mai": "05",
+    "juin": "06",
+    "juillet": "07",
+    "août": "08",
+    "aout": "08",
+    "septembre": "09",
+    "octobre": "10",
+    "novembre": "11",
+    "décembre": "12",
+    "decembre": "12",
 }
 
 # Patterns de dates courants dans les documents français
@@ -200,14 +204,14 @@ def extraire_date(texte: str, chemin_pdf: Path) -> tuple[str, str]:
                 logger.info("  📅 Date trouvée dans le texte : %s/%s", mois, annee)
                 return annee, mois
 
-            elif i == 1:
+            if i == 1:
                 # Format JJ/MM/AAAA
                 annee = groups[2]
                 mois = groups[1]
                 logger.info("  📅 Date trouvée dans le texte : %s/%s", mois, annee)
                 return annee, mois
 
-            elif i == 2:
+            if i == 2:
                 # Format AAAA-MM-JJ (ISO)
                 annee = groups[0]
                 mois = groups[1]
@@ -275,9 +279,7 @@ def traiter_pdf(chemin_pdf: Path, config: dict) -> bool:
 
     if fournisseur:
         nom_fournisseur = fournisseur["nom"]
-        dossier_dest = config["dossier_archives"] / fournisseur.get(
-            "dossier", nom_fournisseur
-        )
+        dossier_dest = config["dossier_archives"] / fournisseur.get("dossier", nom_fournisseur)
     else:
         nom_fournisseur = "Non_classe"
         dossier_dest = config["dossier_archives"] / "Non_classe"
@@ -299,7 +301,7 @@ def traiter_pdf(chemin_pdf: Path, config: dict) -> bool:
         shutil.move(str(chemin_pdf), str(destination))
         logger.info("  ✅ Renommé et déplacé vers : %s", destination)
         return True
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("  ❌ Erreur lors du déplacement : %s", e)
         return False
 
@@ -397,6 +399,7 @@ def executer_commande_git(*args: str) -> tuple[bool, str]:
             text=True,
             encoding="utf-8",
             timeout=30,
+            check=False,
         )
         sortie = (result.stdout + result.stderr).strip()
         return result.returncode == 0, sortie
@@ -404,7 +407,7 @@ def executer_commande_git(*args: str) -> tuple[bool, str]:
         return False, "Git n'est pas installé ou introuvable dans le PATH."
     except subprocess.TimeoutExpired:
         return False, "Timeout : la commande git a pris trop de temps."
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return False, f"Erreur inattendue : {e}"
 
 
