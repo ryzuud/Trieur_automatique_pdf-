@@ -8,11 +8,16 @@ sys.modules["watchdog.observers"] = MagicMock()
 sys.modules["watchdog.events"] = MagicMock()
 
 import pytest
-from trieur_pdf import identifier_fournisseur
+from trieur_pdf import identifier_fournisseur, generer_nom_unique
 
 @pytest.fixture
 def fournisseurs_mock():
     return {
+        "Free_Specific": {
+            "nom": "Free Specific",
+            "mots_cles": ["freebox ultra"],
+            "dossier": "Free"
+        },
         "EDF": {
             "nom": "EDF",
             "mots_cles": ["edf", "électricité de france"],
@@ -21,11 +26,6 @@ def fournisseurs_mock():
         "Free": {
             "nom": "Free",
             "mots_cles": ["free", "free mobile"],
-            "dossier": "Free"
-        },
-        "Free_Specific": {
-            "nom": "Free Specific",
-            "mots_cles": ["freebox ultra"],
             "dossier": "Free"
         }
     }
@@ -70,3 +70,25 @@ def test_identifier_fournisseur_empty_text(fournisseurs_mock):
 def test_identifier_fournisseur_empty_fournisseurs():
     result = identifier_fournisseur("EDF", {})
     assert result is None
+
+def test_generer_nom_unique_no_collision(tmp_path):
+    nom_base = "facture.pdf"
+    result = generer_nom_unique(tmp_path, nom_base)
+    assert result == tmp_path / nom_base
+
+def test_generer_nom_unique_single_collision(tmp_path):
+    nom_base = "facture.pdf"
+    # Create the base file
+    (tmp_path / nom_base).touch()
+
+    result = generer_nom_unique(tmp_path, nom_base)
+    assert result == tmp_path / "facture_2.pdf"
+
+def test_generer_nom_unique_multiple_collisions(tmp_path):
+    nom_base = "facture.pdf"
+    # Create the base file and the _2 file
+    (tmp_path / nom_base).touch()
+    (tmp_path / "facture_2.pdf").touch()
+
+    result = generer_nom_unique(tmp_path, nom_base)
+    assert result == tmp_path / "facture_3.pdf"
